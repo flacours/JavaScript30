@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>JS Drum Kit</title>
+  <script src="https://unpkg.com/vue"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="app">
+    <div class="keys">
+      <div v-for="k in keys">
+        <key-item :kitem="k" :key="k.kcode"></key-item>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const KeyItem = Vue.component('key-item', {
+      props: [
+        'kitem'
+      ],
+      data: function () {
+        return {
+          isPlaying: false
+        }
+      },
+      methods: {
+        playSound: function () {
+          var audio = new Audio(this.kitem.ssrc);
+          this.isPlaying = true;
+          audio.play();
+        }
+      },
+      mounted: function () {
+        console.log(`key mounted ${this.kitem.kcode} ${this.isPlaying}`)
+      },
+      template: `
+        <div class="key" :class="{'playing': isPlaying}">
+          <kbd>{{ kitem.kname }}</kbd>
+          <span class="sound" >{{ kitem.sname }}</span>
+        </div>
+        `,
+    });
+    const app = new Vue(
+      {
+        el: '#app',
+        components: { KeyItem },
+        data: {
+          keys: null,
+        },
+        methods: {
+          handleKey: function (event) {
+            console.log(event.key + ' ' + event.keyCode);
+            let foundKeys = app.$children.filter(function (e) {
+              return e.kitem.kcode === event.keyCode;
+            });
+            if (foundKeys.length) {
+              foundKeys[0].playSound();
+            }
+          },
+          buildKeys: function () {
+            this.keys = [
+              { kcode: 65, kname: "A", sname: "clap", ssrc: "sounds/clap.wav" },
+              { kcode: 83, kname: "S", sname: "hihat", ssrc: "sounds/hihat.wav" },
+              { kcode: 68, kname: "D", sname: "kick", ssrc: "sounds/kick.wav" },
+              { kcode: 70, kname: "F", sname: "openhat", ssrc: "sounds/openhat.wav" },
+              { kcode: 71, kname: "G", sname: "boom", ssrc: "sounds/boom.wav" },
+              { kcode: 72, kname: "H", sname: "ride", ssrc: "sounds/ride.wav" },
+              { kcode: 74, kname: "J", sname: "snare", ssrc: "sounds/snare.wav" },
+              { kcode: 75, kname: "K", sname: "tom", ssrc: "sounds/tom.wav" },
+              { kcode: 76, kname: "L", sname: "tink", ssrc: "sounds/tink.wav" },
+            ];
+          }
+        },
+        created: function () {
+          this.buildKeys();
+          window.addEventListener('keydown', this.handleKey);
+        }
+
+      });
+    function removeTransition(e) {
+      if (e.propertyName !== 'transform') return;
+      e.target.__vue__.isPlaying = false;
+      e.target.classList.remove('playing');
+    }
+    const keys = Array.from(document.querySelectorAll('.key'));
+    keys.forEach(key => key.addEventListener('transitionend', removeTransition));
+  </script>
+
+
+</body>
+
+</html>
