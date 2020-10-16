@@ -11,7 +11,7 @@
 <body>
   <div id="app">
     <div class="keys">
-      <div v-for="k in keys">
+      <div v-for="k in dataKeys">
         <key-item :kitem="k" :key="k.kcode"></key-item>
       </div>
     </div>
@@ -32,10 +32,19 @@
           var audio = new Audio(this.kitem.ssrc);
           this.isPlaying = true;
           audio.play();
-        }
+        },
+        handleKey: function (event) {
+          if (this.kitem.kcode !== event.keyCode) {
+            return;
+          }
+          this.playSound();
+        },
       },
-      mounted: function () {
-        console.log(`key mounted ${this.kitem.kcode} ${this.isPlaying}`)
+      created: function () {
+        window.addEventListener('keydown', this.handleKey);
+      },
+      beforeDestroy: function () {
+        window.removeEventListener('keydown', this.handleKey);
       },
       template: `
         <div class="key" :class="{'playing': isPlaying}">
@@ -48,21 +57,9 @@
       {
         el: '#app',
         components: { KeyItem },
-        data: {
-          keys: null,
-        },
-        methods: {
-          handleKey: function (event) {
-            console.log(event.key + ' ' + event.keyCode);
-            let foundKeys = app.$children.filter(function (e) {
-              return e.kitem.kcode === event.keyCode;
-            });
-            if (foundKeys.length) {
-              foundKeys[0].playSound();
-            }
-          },
-          buildKeys: function () {
-            this.keys = [
+        computed: {
+          dataKeys: function () {
+            return [
               { kcode: 65, kname: "A", sname: "clap", ssrc: "sounds/clap.wav" },
               { kcode: 83, kname: "S", sname: "hihat", ssrc: "sounds/hihat.wav" },
               { kcode: 68, kname: "D", sname: "kick", ssrc: "sounds/kick.wav" },
@@ -75,10 +72,6 @@
             ];
           }
         },
-        created: function () {
-          this.buildKeys();
-          window.addEventListener('keydown', this.handleKey);
-        }
 
       });
     function removeTransition(e) {

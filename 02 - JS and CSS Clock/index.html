@@ -10,9 +10,9 @@
 <body>
   <div class="clock" id="app">
     <div class="clock-face">
-      <div class="hand hour-hand"></div>
-      <div class="hand min-hand"></div>
-      <div class="hand second-hand"></div>
+      <div class="hand hour-hand" :style="{transform: secondsDegreesStyle}"></div>
+      <div class="hand min-hand" :style="{transform: minsDegreesStyle}"></div>
+      <div class="hand second-hand" :style="{transform: hoursDegreesStyle}"></div>
     </div>
   </div>
   <style>
@@ -65,7 +65,7 @@
       transform-origin: 100%;
       transform: rotate(90deg);
       transition: all 0.05s;
-      /* transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1); */
+      transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1); 
     }
   </style>
 
@@ -79,32 +79,25 @@
           secondHand: null,
           minsHand: null,
           hourHand: null,
-          now: null
+          now: new Date()
         },
         methods: {
           setDate: function () {
             this.now = new Date();
-            this.secondHand.style.transform = `rotate(${this.secondsDegrees}deg)`;
-            this.minsHand.style.transform = `rotate(${this.minsDegrees}deg)`;
-            this.hourHand.style.transform = `rotate(${this.hourDegrees}deg)`;
           }
         },
         mounted: function () {
-          console.log("mounted");
-          this.secondHand = document.querySelector('.second-hand');
-          this.minsHand = document.querySelector('.min-hand');
-          this.hourHand = document.querySelector('.hour-hand');
           setInterval(this.setDate, 1000);
           this.setDate();
         },
         computed: {
-          seconds: function() {
+          seconds: function () {
             return this.now.getSeconds();
           },
-          mins: function() {
+          mins: function () {
             return this.now.getMinutes();
           },
-          hours: function() {
+          hours: function () {
             return this.now.getHours();
           },
           secondsDegrees: function () {
@@ -113,15 +106,18 @@
           minsDegrees: function () {
             return ((this.mins / 60) * 360) + ((this.seconds / 60) * 6) + 90;
           },
-          hourDegrees: function () {
+          hoursDegrees: function () {
             return ((this.hours / 12) * 360) + ((this.mins / 60) * 30) + 90;
-          }
-        },
-        created: function () {
-          console.log("created");
-        },
-        activated: function () {
-          console.log("activated");
+          },
+          secondsDegreesStyle: function () {
+            return `rotate(${this.secondsDegrees}deg)`;
+          },
+          minsDegreesStyle: function () {
+            return `rotate(${this.minsDegrees}deg)`;
+          },
+          hoursDegreesStyle: function () {
+            return `rotate(${this.hoursDegrees}deg)`;
+          },
         },
       });
 
