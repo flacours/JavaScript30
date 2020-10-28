@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Type Ahead 👀</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/vue"></script>
+</head>
+
+<body>
+  <div id="app">
+    <search-form></search-form>
+  </div>
+  <script>
+    const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
+    const SearchForm = Vue.component('search-form', {
+      data: function () {
+        return {
+          cities: [],
+          wordToFilter: null,
+          filterCities: []
+        }
+      },
+      methods: {
+        fetchData: function () {
+          fetch(endpoint)
+            .then(items => items.json())
+            .then(data => {
+              this.cities.push(...data);
+            });
+        },
+        findMatches: function (wordToMatch, cities) {
+          return this.cities.filter(place => {
+            // here we need to figure out if the city or state matches what was searched
+            const regex = new RegExp(wordToMatch, 'gi');
+            return place.city.match(regex) || place.state.match(regex)
+          });
+        },
+        numberWithCommas: function (x) {
+          return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+      },
+      watch: {
+        wordToFilter: function (val, oldval) {
+          this.filterCities = this.findMatches(val);
+        }
+      },
+      mounted() {
+        this.fetchData();
+      },
+      template: `
+          <form class="search-form">
+            <input v-model="wordToFilter" type="text" class="search" placeholder="City or State">
+            <ul class="suggestions">
+            <li v-for="item in filterCities">
+              <span class="name">{{item.city}}, {{item.state}}</span>
+              <span class="population">{{numberWithCommas(item.population)}}</span>
+            </li>
+            </ul>
+          </form>`
+    });
+    const vm = new Vue(
+      {
+        el: '#app',
+        components: { SearchForm },
+        data: function () {
+          return {};
+        }
+      });
+  </script>
+</body>
+
+</html>
